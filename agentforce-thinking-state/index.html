@@ -325,9 +325,11 @@
         -webkit-text-fill-color: var(--neutral-100);
         color: var(--neutral-100);
       }
-      .thinking-dots span {
+      .step.active .step-label {
         animation: none;
-        opacity: 0.55;
+        background: none;
+        -webkit-text-fill-color: rgba(255, 255, 255, 0.96);
+        color: rgba(255, 255, 255, 0.96);
       }
     }
 
@@ -633,8 +635,8 @@
       transition: background 0.3s ease;
     }
     .step.active .step-dot {
-      /* Cursor-style: static emphasis on the row marker; motion lives in .thinking-dots */
-      background: rgba(255,255,255,0.95);
+      background: rgba(255,255,255,0.9);
+      animation: pulse 1.2s ease-in-out infinite;
     }
     .step.done .step-dot {
       background: transparent;
@@ -652,63 +654,42 @@
       color: rgba(255,255,255,0.5);
       line-height: 1;
     }
-    /* Row: status dot + text + Cursor-style thinking dots */
-    .step-text {
+    .step > .step-label {
       flex: 1;
       min-width: 0;
-      display: inline-flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 8px;
     }
 
-    /* Step text — solid when active (Cursor); faded when done */
+    /* Step text — shimmer on active row; faded when done */
     .step-label {
       color: rgba(255,255,255,0.9);
       transition: color 0.4s ease, opacity 0.4s ease;
     }
     .step.active .step-label {
-      color: rgba(255,255,255,0.96);
+      background-image: linear-gradient(
+        100deg,
+        rgba(255,255,255,0.6)  0%,
+        rgba(255,255,255,0.6) 38%,
+        rgba(255,255,255,1.0)  50%,
+        rgba(255,255,255,0.6) 62%,
+        rgba(255,255,255,0.6) 100%
+      );
+      background-size: 250% 100%;
+      background-position: 120% 50%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+      animation: shimmer 2.4s ease-in-out infinite;
     }
     .step.done .step-label {
+      -webkit-text-fill-color: rgba(255,255,255,0.4);
       color: rgba(255,255,255,0.4);
       font-style: normal;
     }
 
-    /* Cursor-like: three staggered dots, opacity + tiny vertical bounce */
-    .thinking-dots {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      height: 20px;
-      opacity: 0;
-      transition: opacity 0.2s ease;
-    }
-    .step.active .thinking-dots {
-      opacity: 1;
-    }
-    .step.done .thinking-dots {
-      display: none;
-    }
-    .thinking-dots span {
-      display: block;
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.78);
-      animation: cursorThinkingDot 1.05s ease-in-out infinite;
-    }
-    .thinking-dots span:nth-child(2) { animation-delay: 0.14s; }
-    .thinking-dots span:nth-child(3) { animation-delay: 0.28s; }
-    @keyframes cursorThinkingDot {
-      0%, 70%, 100% {
-        opacity: 0.2;
-        transform: translateY(1px);
-      }
-      35% {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.5; transform: scale(0.75); }
     }
 
     /* ── Email response body (Figma node 15478:1219) ── */
@@ -859,10 +840,10 @@
         <!-- Thinking phase -->
         <div class="block-phase" id="pricingThinking" role="status" aria-live="polite">
           <div class="steps-list">
-            <div class="step" id="pStep0"><span class="step-dot" aria-hidden="true"></span><span class="step-text"><span class="step-label">Checking today's best available pricing</span><span class="thinking-dots" aria-hidden="true"><span></span><span></span><span></span></span></span></div>
-            <div class="step" id="pStep1"><span class="step-dot" aria-hidden="true"></span><span class="step-text"><span class="step-label">Calculating your early bird savings</span><span class="thinking-dots" aria-hidden="true"><span></span><span></span><span></span></span></span></div>
-            <div class="step" id="pStep2"><span class="step-dot" aria-hidden="true"></span><span class="step-text"><span class="step-label">Scanning group discount eligibility</span><span class="thinking-dots" aria-hidden="true"><span></span><span></span><span></span></span></span></div>
-            <div class="step" id="pStep3"><span class="step-dot" aria-hidden="true"></span><span class="step-text"><span class="step-label">Curating your best deal</span><span class="thinking-dots" aria-hidden="true"><span></span><span></span><span></span></span></span></div>
+            <div class="step" id="pStep0"><span class="step-dot" aria-hidden="true"></span><span class="step-label">Checking today's best available pricing</span></div>
+            <div class="step" id="pStep1"><span class="step-dot" aria-hidden="true"></span><span class="step-label">Calculating your early bird savings</span></div>
+            <div class="step" id="pStep2"><span class="step-dot" aria-hidden="true"></span><span class="step-label">Scanning group discount eligibility</span></div>
+            <div class="step" id="pStep3"><span class="step-dot" aria-hidden="true"></span><span class="step-label">Curating your best deal</span></div>
           </div>
         </div>
         <!-- Response phase -->
@@ -925,10 +906,10 @@
         <!-- Thinking phase -->
         <div class="block-phase" id="convinceThinking" role="status" aria-live="polite">
           <div class="steps-list">
-            <div class="step" id="step0"><span class="step-dot" aria-hidden="true"></span><span class="step-text"><span class="step-label">Searching Dreamforce 2026 session data</span><span class="thinking-dots" aria-hidden="true"><span></span><span></span><span></span></span></span></div>
-            <div class="step" id="step1"><span class="step-dot" aria-hidden="true"></span><span class="step-text"><span class="step-label">Reviewing attendance benefits and ROI</span><span class="thinking-dots" aria-hidden="true"><span></span><span></span><span></span></span></span></div>
-            <div class="step" id="step2"><span class="step-dot" aria-hidden="true"></span><span class="step-text"><span class="step-label">Finding customer success stories</span><span class="thinking-dots" aria-hidden="true"><span></span><span></span><span></span></span></span></div>
-            <div class="step" id="step3"><span class="step-dot" aria-hidden="true"></span><span class="step-text"><span class="step-label">Composing email draft</span><span class="thinking-dots" aria-hidden="true"><span></span><span></span><span></span></span></span></div>
+            <div class="step" id="step0"><span class="step-dot" aria-hidden="true"></span><span class="step-label">Searching Dreamforce 2026 session data</span></div>
+            <div class="step" id="step1"><span class="step-dot" aria-hidden="true"></span><span class="step-label">Reviewing attendance benefits and ROI</span></div>
+            <div class="step" id="step2"><span class="step-dot" aria-hidden="true"></span><span class="step-label">Finding customer success stories</span></div>
+            <div class="step" id="step3"><span class="step-dot" aria-hidden="true"></span><span class="step-label">Composing email draft</span></div>
           </div>
         </div>
         <!-- Response phase -->
