@@ -27,7 +27,8 @@ alwaysApply: true
 
 ## Git & deploy
 
-- After meaningful edits: `git add`, **clear commit message**, `git push origin main`.
+- **After each build** (any coherent set of changes the user asked for—HTML/CSS/assets/rules): **`git add`**, commit with a **clear message**, then **`git push origin main`**. Do not stop at “committed locally” unless the user explicitly says not to push.
+- If `git push` fails (auth, network), report the error and the exact command to retry; otherwise treat push as part of the same task.
 - **GitHub Pages**: branch `main`, publish from `/` (root); demos live under `https://<user>.github.io/<repo>/<prototype-folder>/`.
 - **Netlify**: drag the repo folder (with root `index.html`) or connect GitHub; build command empty, publish directory **`.`**.
 
