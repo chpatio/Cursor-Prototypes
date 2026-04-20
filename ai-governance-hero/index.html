@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How we govern AI responsibly — Salesforce</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Salesforce Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #ffffff;
+    }
+
+    /* ── Hero wrapper ── */
+    .hero {
+      position: relative;
+      width: 100%;
+      max-width: 1440px;
+      margin: 0 auto;
+      min-height: 620px;
+      background: #ffffff;
+      overflow: hidden;
+      display: flex;
+      align-items: stretch;
+    }
+
+    /* ── Left: white content panel ── */
+    .hero__left {
+      position: relative;
+      z-index: 2;
+      flex: 0 0 660px;
+      padding: 108px 60px 140px 80px;
+      display: flex;
+      flex-direction: column;
+      gap: 48px;
+      justify-content: center;
+    }
+
+    .hero__text {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      max-width: 510px;
+    }
+
+    /* Headline */
+    .hero__headline {
+      font-family: 'Avant Garde for Salesforce', 'ITC Avant Garde Gothic', 'Century Gothic', sans-serif;
+      font-size: 56px;
+      font-weight: 600;
+      line-height: 64px;
+      letter-spacing: -0.19px;
+      color: #032d60;
+      font-feature-settings: 'lnum' 1, 'pnum' 1;
+    }
+
+    .hero__headline .accent {
+      color: #00a1e0;
+    }
+
+    /* Body copy */
+    .hero__body {
+      font-size: 18px;
+      font-weight: 400;
+      line-height: 28px;
+      letter-spacing: 0.02px;
+      color: #032d60;
+      max-width: 510px;
+    }
+
+    /* CTA — electric blue pill */
+    .btn {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 52px;
+      padding: 0 32px;
+      border-radius: 99px;
+      border: 2px solid rgba(255, 255, 255, 0.25);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 24px;
+      letter-spacing: 0.02px;
+      color: #ffffff;
+      text-decoration: none;
+      overflow: hidden;
+      white-space: nowrap;
+      box-shadow:
+        0px 2px 4px 0px rgba(6, 106, 254, 0.3),
+        inset 0px 2px 16px 0px rgba(3, 45, 96, 0.05);
+      transition: opacity 0.15s ease;
+      align-self: flex-start;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: #066afe;
+      border-radius: 99px;
+      pointer-events: none;
+    }
+
+    .btn span { position: relative; }
+
+    .btn:hover { opacity: 0.88; }
+    .btn:focus-visible {
+      outline: 2px solid #032d60;
+      outline-offset: 3px;
+    }
+
+    /* ── Right: yellow illustration panel ── */
+    .hero__right {
+      flex: 1 1 auto;
+      position: relative;
+      background: #fcc003;
+      overflow: hidden;
+      min-height: 620px;
+    }
+
+    .hero__illustration {
+      position: absolute;
+      width: 630px;
+      height: 630px;
+      top: 32px;
+      left: 36px;
+      object-fit: contain;
+      object-position: center bottom;
+    }
+
+    /* ── Contour wave at bottom ── */
+    .hero__contour {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%) rotate(180deg) scaleX(-1);
+      width: 1440px;
+      height: 99px;
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 1024px) {
+      .hero {
+        flex-direction: column;
+        min-height: auto;
+      }
+      .hero__left {
+        flex: none;
+        padding: 60px 40px;
+      }
+      .hero__right {
+        min-height: 400px;
+      }
+      .hero__illustration {
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        object-position: center;
+      }
+      .hero__headline {
+        font-size: 40px;
+        line-height: 50px;
+      }
+      .hero__contour {
+        display: none;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .hero__left { padding: 48px 24px; }
+      .hero__headline { font-size: 32px; line-height: 42px; }
+      .hero__body { font-size: 16px; line-height: 25px; }
+      .hero__right { min-height: 280px; }
+    }
+  </style>
+</head>
+<body>
+
+  <section class="hero" aria-label="How we govern AI responsibly">
+
+    <!-- ── Left: text + CTA ── -->
+    <div class="hero__left">
+      <div class="hero__text">
+
+        <h1 class="hero__headline">
+          How we <span class="accent">govern AI</span> responsibly.
+        </h1>
+
+        <p class="hero__body">
+          As AI moves from assistance to autonomous action, governance must be deliberate,
+          structured, and enforceable. We define clear policy boundaries, embed oversight
+          at every stage of development, and operationalize accountability across the organization.
+        </p>
+
+      </div>
+
+      <a href="#" class="btn"><span>Read report</span></a>
+    </div>
+
+    <!-- ── Right: yellow + illustration ── -->
+    <div class="hero__right" aria-hidden="true">
+      <img
+        class="hero__illustration"
+        src="assets/illustration.png"
+        alt="3D illustration of a businesswoman multitasking"
+      />
+    </div>
+
+    <!-- Wave contour -->
+    <img
+      class="hero__contour"
+      src="assets/contour.svg"
+      alt=""
+      aria-hidden="true"
+    />
+
+  </section>
+
+</body>
+</html>

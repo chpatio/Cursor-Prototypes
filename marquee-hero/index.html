@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agentforce 360 — Marquee Hero</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Salesforce Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #032d60;
+    }
+
+    /* ── Hero section ── */
+    .hero {
+      position: relative;
+      width: 100%;
+      min-height: 773px;
+      overflow: hidden;
+    }
+
+    .hero__bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .hero__inner {
+      position: relative;
+      max-width: 1440px;
+      margin: 0 auto;
+      min-height: 773px;
+      padding: 64px 80px;
+      display: flex;
+      align-items: center;
+      gap: 40px;
+    }
+
+    /* ── Left panel ── */
+    .hero__left {
+      flex: 1 0 0;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 48px;
+    }
+
+    .hero__content {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Eyebrow */
+    .eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .eyebrow__icon {
+      width: 48px;
+      height: 48px;
+      flex-shrink: 0;
+    }
+
+    .eyebrow__text {
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 24px;
+      letter-spacing: 0.02px;
+    }
+
+    /* Headline */
+    .headline {
+      color: #ffffff;
+      font-family: 'Avant Garde for Salesforce', 'ITC Avant Garde Gothic', 'Century Gothic', sans-serif;
+      font-size: 56px;
+      font-weight: 600;
+      line-height: 64px;
+      letter-spacing: -0.19px;
+      font-feature-settings: 'lnum' 1, 'pnum' 1;
+      max-width: 620px;
+    }
+
+    .headline__accent {
+      color: #90d0fe;
+    }
+
+    /* Body copy */
+    .body-copy {
+      color: #ffffff;
+      font-size: 20px;
+      font-weight: 400;
+      line-height: 30px;
+      letter-spacing: 0.02px;
+      max-width: 510px;
+    }
+
+    /* CTA block */
+    .cta-block {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .btn {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 52px;
+      padding: 12px 32px;
+      border-radius: 99px;
+      border: 2px solid rgba(255, 255, 255, 0.25);
+      cursor: pointer;
+      white-space: nowrap;
+      font-family: inherit;
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 24px;
+      letter-spacing: 0.02px;
+      box-shadow:
+        0px 2px 4px 0px rgba(6, 106, 254, 0.3),
+        inset 0px 2px 16px 0px rgba(3, 45, 96, 0.05);
+      transition: opacity 0.15s ease;
+      overflow: hidden;
+      background: transparent;
+      text-decoration: none;
+    }
+
+    .btn:hover { opacity: 0.88; }
+
+    .btn:focus-visible {
+      outline: 2px solid #ffffff;
+      outline-offset: 3px;
+    }
+
+    /* Ghost / frosted glass */
+    .btn--ghost { color: #002775; }
+    .btn--ghost::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255, 255, 255, 0.75);
+      border-radius: 99px;
+      pointer-events: none;
+    }
+    .btn--ghost span { position: relative; }
+
+    /* Electric blue */
+    .btn--primary { color: #ffffff; }
+    .btn--primary::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: #066afe;
+      border-radius: 99px;
+      pointer-events: none;
+    }
+    .btn--primary span { position: relative; }
+
+    /* ── Right panel ── */
+    .hero__right {
+      flex-shrink: 0;
+      width: 510px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      align-self: stretch;
+    }
+
+    .hero__image-wrap {
+      position: relative;
+      width: 700px;
+      height: 467px;
+      flex-shrink: 0;
+    }
+
+    .hero__image {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 1024px) {
+      .hero__inner { flex-direction: column; padding: 48px 40px; gap: 32px; }
+      .hero__right { width: 100%; justify-content: center; }
+      .hero__image-wrap { width: 100%; height: auto; aspect-ratio: 700 / 467; }
+      .hero__image { position: static; width: 100%; height: 100%; }
+      .headline { font-size: 40px; line-height: 48px; max-width: 100%; }
+    }
+
+    @media (max-width: 640px) {
+      .hero__inner { padding: 40px 24px; }
+      .headline { font-size: 32px; line-height: 40px; }
+      .body-copy { font-size: 17px; line-height: 26px; }
+      .cta-block { flex-direction: column; align-items: flex-start; gap: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+  <section class="hero" aria-label="Agentforce 360 for Communications">
+
+    <!-- Panoramic background (SVG) -->
+    <img
+      class="hero__bg"
+      src="assets/bg.svg"
+      alt=""
+      aria-hidden="true"
+    />
+
+    <div class="hero__inner">
+
+      <!-- ── Left panel ── -->
+      <div class="hero__left">
+
+        <div class="hero__content">
+
+          <!-- Eyebrow -->
+          <div class="eyebrow">
+            <img
+              class="eyebrow__icon"
+              src="assets/icon.svg"
+              alt=""
+              aria-hidden="true"
+            />
+            <span class="eyebrow__text">Agentforce 360 for Communications</span>
+          </div>
+
+          <!-- Headline -->
+          <h1 class="headline">
+            Increase revenue and lower churn with
+            <span class="headline__accent"> Agentforce 360</span>
+            for Communications.
+          </h1>
+
+          <!-- Body copy -->
+          <p class="body-copy">
+            Boost B2B and B2C communications with humans and agents working together.
+            Generate quotes in real time, resolve service issues faster, fulfill orders
+            seamlessly, and personalize every touchpoint with Agentforce.
+          </p>
+
+        </div>
+
+        <!-- CTAs -->
+        <div class="cta-block">
+          <a href="#" class="btn btn--ghost">
+            <span>Learn more</span>
+          </a>
+          <a href="#" class="btn btn--primary">
+            <span>Try for free</span>
+          </a>
+        </div>
+
+      </div>
+
+      <!-- ── Right panel ── -->
+      <div class="hero__right">
+        <div class="hero__image-wrap">
+          <img
+            class="hero__image"
+            src="assets/product.png"
+            alt="Agentforce 360 product screenshot showing customer service interface"
+          />
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</body>
+</html>

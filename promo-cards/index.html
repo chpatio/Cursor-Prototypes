@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Promo Cards — Brand 2027</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Salesforce Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f3f3f3;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px;
+    }
+
+    /* ── Card row ── */
+    .cards {
+      display: flex;
+      gap: 24px;
+      width: 100%;
+      max-width: 1100px;
+      align-items: stretch;
+    }
+
+    /* ── Single card ── */
+    .card {
+      position: relative;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 40px;
+      border-radius: 32px;
+      overflow: hidden;
+      flex: 1 0 0;
+      min-height: 280px;
+    }
+
+    .card--pink  { background: #ff538a; }
+    .card--blue  { background: #066afe; }
+
+    /* ── Left content ── */
+    .card__body {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 32px;
+      flex: 1 0 0;
+      min-width: 0;
+      max-width: 325px;
+      height: 100%;
+      align-self: stretch;
+    }
+
+    .card__title {
+      font-family: 'Avant Garde for Salesforce', 'ITC Avant Garde Gothic', 'Century Gothic', sans-serif;
+      font-size: 40px;
+      font-weight: 600;
+      line-height: 48px;
+      letter-spacing: -0.13px;
+    }
+
+    .card--pink  .card__title { color: #61022a; }
+    .card--blue  .card__title { color: #ffffff; }
+
+    /* ── CTA button (frosted glass) ── */
+    .btn {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 44px;
+      padding: 0 24px;
+      border-radius: 99px;
+      border: 2px solid rgba(255, 255, 255, 0.25);
+      cursor: pointer;
+      white-space: nowrap;
+      font-family: inherit;
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 24px;
+      letter-spacing: 0.02px;
+      color: #002775;
+      text-decoration: none;
+      overflow: hidden;
+      box-shadow:
+        0px 2px 4px 0px rgba(6, 106, 254, 0.3),
+        inset 0px 2px 16px 0px rgba(3, 45, 96, 0.05);
+      transition: opacity 0.15s ease;
+      align-self: flex-start;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255, 255, 255, 0.75);
+      border-radius: 99px;
+      pointer-events: none;
+    }
+
+    .btn span { position: relative; }
+
+    .btn:hover { opacity: 0.88; }
+    .btn:focus-visible {
+      outline: 2px solid #fff;
+      outline-offset: 3px;
+    }
+
+    /* ── Right image area ── */
+    .card__media {
+      position: relative;
+      flex-shrink: 0;
+      width: 207px;
+      height: 271px;
+      border-radius: 12px;
+      overflow: hidden;
+      align-self: flex-end;
+    }
+
+    /* Pink card — mascot */
+    .card--pink .card__media-img {
+      position: absolute;
+      width: 110%;
+      height: 110%;
+      top: -5%;
+      left: -5%;
+      object-fit: cover;
+    }
+
+    /* Blue card — photo */
+    .card--blue .card__media-img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center top;
+    }
+
+    /* Stars */
+    .star {
+      position: absolute;
+      pointer-events: none;
+      object-fit: contain;
+    }
+
+    /* Pink card stars */
+    .card--pink .star--1 {
+      width: 60px;
+      height: 60px;
+      top: -4px;
+      right: 64px;
+    }
+    .card--pink .star--2 {
+      width: 40px;
+      height: 40px;
+      top: 28px;
+      right: 100px;
+    }
+
+    /* Blue card stars */
+    .card--blue .star--1 {
+      width: 32px;
+      height: 32px;
+      bottom: 88px;
+      right: 198px;
+    }
+    .card--blue .star--2 {
+      width: 76px;
+      height: 76px;
+      top: -6px;
+      right: 148px;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .cards { flex-direction: column; }
+      .card { min-height: auto; }
+      .card__title { font-size: 30px; line-height: 38px; }
+      .card__media { width: 160px; height: 210px; }
+    }
+
+    @media (max-width: 480px) {
+      .card { padding: 28px; border-radius: 20px; }
+      .card__title { font-size: 24px; line-height: 32px; }
+      .card__media { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="cards">
+
+    <!-- ── Card 1: Pink — AI Report ── -->
+    <div class="card card--pink">
+      <div class="card__body">
+        <h2 class="card__title">Trusted AI and agents impact report</h2>
+        <a href="#" class="btn"><span>Read report</span></a>
+      </div>
+
+      <div class="card__media">
+        <!-- Mascot background shape -->
+        <img src="assets/mascot-bg.png" alt="" aria-hidden="true" class="card__media-img" />
+        <!-- Mascot character -->
+        <img
+          src="assets/mascot.png"
+          alt="Salesforce Agentforce AI character"
+          style="position:absolute;width:130%;bottom:-5%;left:-15%;object-fit:contain;"
+        />
+      </div>
+
+      <!-- Stars -->
+      <img src="assets/star-pink.png"   alt="" aria-hidden="true" class="star star--1" />
+      <img src="assets/star-yellow.png" alt="" aria-hidden="true" class="star star--2" />
+    </div>
+
+    <!-- ── Card 2: Blue — A day empowered by Agents ── -->
+    <div class="card card--blue">
+      <div class="card__body">
+        <h2 class="card__title">A day empowered by Agents</h2>
+        <a href="#" class="btn"><span>Explore the experience</span></a>
+      </div>
+
+      <div class="card__media">
+        <img
+          src="assets/photo.jpg"
+          alt="Two professionals collaborating with Agentforce"
+          class="card__media-img"
+        />
+      </div>
+
+      <!-- Stars -->
+      <img src="assets/star-yellow.png" alt="" aria-hidden="true" class="star star--1" />
+      <img src="assets/star-pink.png"   alt="" aria-hidden="true" class="star star--2" />
+    </div>
+
+  </div>
+
+</body>
+</html>

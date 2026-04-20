@@ -1,0 +1,11 @@
+<svg preserveAspectRatio="none" width="100%" height="100%" overflow="visible" style="display: block;" viewBox="0 0 1441 778" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path id="Panoramic Frame" d="M0 0L1441 0.589841V726.094C1441 726.094 1191 658.308 853 669.189C515 680.07 4.02927e-05 778 4.02927e-05 778L0 0Z" fill="url(#paint0_linear_0_409)"/>
+<defs>
+<linearGradient id="paint0_linear_0_409" x1="720.5" y1="0" x2="720.5" y2="778" gradientUnits="userSpaceOnUse">
+<stop stop-color="#001E5B"/>
+<stop offset="0.352126" stop-color="#022AC0"/>
+<stop offset="0.8" stop-color="#066AFE"/>
+<stop offset="1" stop-color="#00B3FF"/>
+</linearGradient>
+</defs>
+</svg>
