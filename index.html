@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cursor Prototypes</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: #f6f8fa;
+      color: #1f2328;
+      line-height: 1.5;
+      padding: 48px 24px 80px;
+    }
+    .wrap { max-width: 640px; margin: 0 auto; }
+    h1 { font-size: 1.75rem; font-weight: 650; margin-bottom: 8px; }
+    p.lead { color: #656d76; margin-bottom: 32px; font-size: 0.95rem; }
+    ul { list-style: none; }
+    li { margin-bottom: 12px; }
+    a.card {
+      display: block;
+      padding: 16px 20px;
+      background: #fff;
+      border: 1px solid #d0d7de;
+      border-radius: 10px;
+      text-decoration: none;
+      color: #0969da;
+      font-weight: 600;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    a.card:hover {
+      border-color: #0969da;
+      box-shadow: 0 1px 3px rgba(9, 105, 218, 0.12);
+    }
+    a.card span.desc {
+      display: block;
+      font-weight: 400;
+      font-size: 0.85rem;
+      color: #656d76;
+      margin-top: 4px;
+    }
+    footer {
+      margin-top: 40px;
+      font-size: 0.8rem;
+      color: #656d76;
+    }
+    footer a { color: #0969da; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Cursor Prototypes</h1>
+    <p class="lead">Static HTML demos. Open any link below.</p>
+    <ul>
+      <li>
+        <a class="card" href="marquee-hero/">
+          Marquee hero (Agentforce 360)
+          <span class="desc">Full-width hero · local assets</span>
+        </a>
+      </li>
+      <li>
+        <a class="card" href="ai-governance-hero/">
+          AI governance hero
+          <span class="desc">Split layout · yellow panel · contour wave</span>
+        </a>
+      </li>
+      <li>
+        <a class="card" href="promo-cards/">
+          Promo cards
+          <span class="desc">Two-column pink / blue cards</span>
+        </a>
+      </li>
+      <li>
+        <a class="card" href="agentforce-thinking-state/">
+          Agentforce thinking state
+          <span class="desc">Astro + thinking UI</span>
+        </a>
+      </li>
+      <li>
+        <a class="card" href="MarqueeHero.html">
+          MarqueeHero (standalone file)
+          <span class="desc">Original single-file version (Figma URLs may expire)</span>
+        </a>
+      </li>
+    </ul>
+    <footer>
+      Host on <a href="https://pages.github.com/">GitHub Pages</a>: Settings → Pages → Branch <code>main</code>, folder <code>/ (root)</code>.
+      Then this hub is at <code>https://&lt;user&gt;.github.io/&lt;repo&gt;/</code>.
+    </footer>
+  </div>
+</body>
+</html>
