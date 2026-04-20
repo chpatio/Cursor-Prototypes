@@ -613,9 +613,7 @@
       gap: 6px;
     }
     .step {
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      display: block;
       font-style: normal;
       font-size: 16px;
       line-height: 20px;
@@ -625,42 +623,10 @@
     }
     .step.visible { opacity: 1; transform: translateY(0); }
 
-    /* Step indicator dot */
-    .step-dot {
-      flex-shrink: 0;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.4);
-      transition: background 0.3s ease;
-    }
-    .step.active .step-dot {
-      background: rgba(255,255,255,0.9);
-      animation: pulse 1.2s ease-in-out infinite;
-    }
-    .step.done .step-dot {
-      background: transparent;
-      position: relative;
-    }
-    /* Checkmark for done steps */
-    .step.done .step-dot::after {
-      content: '✓';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 10px;
-      font-style: normal;
-      color: rgba(255,255,255,0.5);
-      line-height: 1;
-    }
-    .step > .step-label {
-      flex: 1;
-      min-width: 0;
-    }
-
     /* Step text — shimmer on active row; faded when done */
     .step-label {
+      display: block;
+      width: 100%;
       color: rgba(255,255,255,0.9);
       transition: color 0.4s ease, opacity 0.4s ease;
     }
@@ -685,11 +651,6 @@
       -webkit-text-fill-color: rgba(255,255,255,0.4);
       color: rgba(255,255,255,0.4);
       font-style: normal;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50%       { opacity: 0.5; transform: scale(0.75); }
     }
 
     /* ── Email response body (Figma node 15478:1219) ── */
@@ -840,10 +801,10 @@
         <!-- Thinking phase -->
         <div class="block-phase" id="pricingThinking" role="status" aria-live="polite">
           <div class="steps-list">
-            <div class="step" id="pStep0"><span class="step-dot" aria-hidden="true"></span><span class="step-label">Checking today's best available pricing</span></div>
-            <div class="step" id="pStep1"><span class="step-dot" aria-hidden="true"></span><span class="step-label">Calculating your early bird savings</span></div>
-            <div class="step" id="pStep2"><span class="step-dot" aria-hidden="true"></span><span class="step-label">Scanning group discount eligibility</span></div>
-            <div class="step" id="pStep3"><span class="step-dot" aria-hidden="true"></span><span class="step-label">Curating your best deal</span></div>
+            <div class="step" id="pStep0"><span class="step-label">Checking today's best available pricing</span></div>
+            <div class="step" id="pStep1"><span class="step-label">Calculating your early bird savings</span></div>
+            <div class="step" id="pStep2"><span class="step-label">Scanning group discount eligibility</span></div>
+            <div class="step" id="pStep3"><span class="step-label">Curating your best deal</span></div>
           </div>
         </div>
         <!-- Response phase -->
@@ -906,10 +867,10 @@
         <!-- Thinking phase -->
         <div class="block-phase" id="convinceThinking" role="status" aria-live="polite">
           <div class="steps-list">
-            <div class="step" id="step0"><span class="step-dot" aria-hidden="true"></span><span class="step-label">Searching Dreamforce 2026 session data</span></div>
-            <div class="step" id="step1"><span class="step-dot" aria-hidden="true"></span><span class="step-label">Reviewing attendance benefits and ROI</span></div>
-            <div class="step" id="step2"><span class="step-dot" aria-hidden="true"></span><span class="step-label">Finding customer success stories</span></div>
-            <div class="step" id="step3"><span class="step-dot" aria-hidden="true"></span><span class="step-label">Composing email draft</span></div>
+            <div class="step" id="step0"><span class="step-label">Searching Dreamforce 2026 session data</span></div>
+            <div class="step" id="step1"><span class="step-label">Reviewing attendance benefits and ROI</span></div>
+            <div class="step" id="step2"><span class="step-label">Finding customer success stories</span></div>
+            <div class="step" id="step3"><span class="step-label">Composing email draft</span></div>
           </div>
         </div>
         <!-- Response phase -->
