@@ -1,0 +1,36 @@
+---
+description: How we build, ship, and iterate static UI prototypes in this repo (Figma → HTML → Git → hosting).
+alwaysApply: true
+---
+
+# Static prototype workflow (this repo)
+
+## Figma → implementation
+
+- When the user shares a Figma URL, parse **file key** and **node-id** from `/design/:fileKey/...?node-id=...`.
+- Prefer **Figma MCP**: `get_design_context` for structure, tokens, and codegen hints; `get_screenshot` when available for visual QA.
+- If Code Connect prompts appear, follow the script (yes → suggestions, no → `get_design_context` again).
+- Treat MCP output as **design truth**, then simplify to **plain HTML + CSS** in this repo unless the user asks for React.
+- **Do not** rely on long-lived Figma asset URLs in shipped files: **download** images/SVGs into `assets/` and reference them with **relative paths** (`assets/foo.png`).
+
+## File layout
+
+- One prototype per folder: `folder-name/index.html` + `assets/` as needed.
+- Keep a **root `index.html`** hub that links to each prototype for GitHub Pages / static hosts.
+- Respect `.gitignore` (e.g. do not commit `*.zip`).
+
+## Visual polish
+
+- Match typography, spacing, and colors from Figma; use system font stacks where brand fonts are not licensed in-repo.
+- Add **basic responsive** rules when layouts break on smaller widths.
+- For motion (e.g. shimmer): tune in **small steps**; honor **`prefers-reduced-motion`** where animations exist.
+
+## Git & deploy
+
+- After meaningful edits: `git add`, **clear commit message**, `git push origin main`.
+- **GitHub Pages**: branch `main`, publish from `/` (root); demos live under `https://<user>.github.io/<repo>/<prototype-folder>/`.
+- **Netlify**: drag the repo folder (with root `index.html`) or connect GitHub; build command empty, publish directory **`.`**.
+
+## Communication
+
+- Summarize what changed, where files live, and the live URL pattern after deploy-related work.
