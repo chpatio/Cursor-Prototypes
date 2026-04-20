@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agentforce — Thinking State</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --font-body:    'Salesforce Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-display: 'Avant Garde For Salesforce', 'ITC Avant Garde Gothic', 'Century Gothic', sans-serif;
+
+      --neutral-95:        #f3f3f3;
+      --neutral-100:       #ffffff;
+      --neutral-80:        #c9c9c9;
+      --neutral-50:        #747474;
+      --blue-50:           #0176d3;
+      --blue-primary:      #032d60;
+      --brand-90:          #d6e6ff;
+      --electric-blue-80:  #a8cbff;
+      --surface-1:         #ffffff;
+
+      --thread-width:   880px;
+      --page-gutter:    16px;   /* min horizontal breathing room each side */
+      --avatar-size:    32px;
+      --avatar-gap:     12px;
+      --content-offset: calc(var(--avatar-size) + var(--avatar-gap)); /* 44px */
+      /* shared column formula — thread AND input bar use this */
+      --col-width: min(var(--thread-width), 100% - (var(--page-gutter) * 2));
+    }
+
+    html, body { min-height: 100%; }
+
+    body {
+      font-family: var(--font-body);
+      min-width: 1440px;
+      background: linear-gradient(180deg,
+        rgb(0, 30, 91)     0%,
+        rgb(0, 30, 91)     46.339%,
+        rgb(0, 30, 93)     68.879%,
+        rgb(2, 42, 192)    85.469%,
+        rgb(158, 105, 239) 100%
+      );
+      background-attachment: fixed;
+      overflow: hidden; /* scroll happens inside .scroll-area */
+    }
+
+    /* ── Scroll container — extends to input bar midpoint with a soft fade ── */
+    .scroll-area {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 48px; /* midpoint of input bar: 20px offset + 28px (56px / 2) */
+      overflow-y: scroll;        /* always reserve scrollbar gutter — prevents layout jitter */
+      overflow-x: hidden;
+      scrollbar-gutter: stable;  /* modern browsers: hold the gutter even when bar is hidden */
+      background: transparent;   /* body gradient always shows through behind content */
+    }
+
+    /* ── Thread — same column formula as input bar ── */
+    .thread {
+      width: var(--col-width);
+      margin: 0 auto;
+      padding-top: 48px;
+      padding-bottom: 112px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Speaker cards ── */
+    .cards-row {
+      padding-left: var(--content-offset);
+      margin-bottom: 24px;
+    }
+
+    .cards-inner {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    /* 2 columns */
+    @media (max-width: 640px) {
+      .cards-inner {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    /* 1 column */
+    @media (max-width: 400px) {
+      .cards-inner {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .profile-card {
+      border-radius: 13px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      padding: 12px 12px 24px;
+      overflow: hidden;
+      min-width: 0; /* prevent grid blowout */
+    }
+
+    .profile-card--teal       { background: #82f0e5; color: #024d4c; }
+    .profile-card--light-blue { background: #90d0fe; color: #022ac0; }
+    .profile-card--violet     { background: #c29ef0; color: #481a54; }
+
+    .profile-card__img {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .profile-card__img img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .profile-card__content {
+      display: flex;
+      flex-direction: column;
+      gap: 7.7px;
+      text-align: center;
+    }
+
+    .profile-card__name {
+      font-family: var(--font-display);
+      font-size: 20.6px;
+      font-weight: 600;
+      line-height: 1;
+      letter-spacing: -0.21px;
+    }
+
+    .profile-card__role {
+      font-family: var(--font-body);
+      font-size: 10.3px;
+      font-weight: 400;
+      line-height: 1.25;
+    }
+
+    /* ── Chips — indented to align with agent content column ── */
+    .chips-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding-left: var(--content-offset);
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 36px;
+      padding: 8px 24px;
+      border-radius: 99px;
+      border: 2px solid rgba(255, 255, 255, 0.25);
+      background: var(--neutral-95);
+      box-shadow:
+        0 2px 4px 0 rgba(6, 106, 254, 0.3),
+        inset 0 2px 16px 0 rgba(3, 45, 96, 0.05);
+      font-family: var(--font-body);
+      font-weight: 700;
+      font-size: 14px;
+      line-height: 20px;
+      color: var(--blue-50);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: filter 0.15s ease, transform 0.1s ease;
+    }
+
+    .chip:hover  { filter: brightness(0.96); }
+    .chip:active { transform: scale(0.97); }
+
+    /* ── User bubble — full thread width, pinned right ── */
+    .user-row {
+      display: none;          /* collapsed — no layout contribution when hidden */
+      justify-content: flex-end;
+      margin-top: 24px;       /* exact 24px from whatever precedes it */
+      opacity: 0;
+      transform: translateX(12px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .user-row.visible {
+      display: flex;
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .bubble {
+      display: inline-flex;
+      align-items: center;
+      padding: 9px 16px 7px;
+      border-radius: 8px;
+      background: var(--electric-blue-80);
+      font-size: 16px;
+      line-height: 24px;
+      letter-spacing: 0.0192px;
+      color: var(--blue-primary);
+      white-space: nowrap;
+    }
+
+    /* ── Thinking row — avatar flush left, content fills remainder ── */
+    .thinking-row {
+      display: none;
+      align-items: flex-start;   /* avatar pins to top so first step always lines up */
+      gap: var(--avatar-gap);
+      margin-top: 24px;
+      opacity: 0;
+      transition: opacity 0.35s ease;
+    }
+
+    .thinking-row.visible {
+      display: flex;
+      opacity: 1;
+    }
+
+    /* Offset the steps list so the first line's midpoint = avatar's midpoint
+       Avatar: 32px → centre at 16px
+       Step line-height: 20px → centre at 10px
+       Offset needed: 16 - 10 = 6px */
+    .thinking-row .steps-list,
+    .steps-row .steps-list,
+    .agent-block .steps-list {
+      padding-top: 6px;
+    }
+
+    /* ── Shared agent block (avatar + swappable content phases) ── */
+    .agent-block {
+      display: none;
+      align-items: flex-start;
+      gap: var(--avatar-gap);
+      margin-top: 24px;
+      opacity: 0;
+      transition: opacity 0.35s ease;
+    }
+    .agent-block.visible {
+      display: flex;
+      opacity: 1;
+    }
+    /* Keep avatar pinned at top — padding-top on .steps-list handles alignment */
+    .agent-block > .agent-avatar {
+      flex-shrink: 0;
+      margin-top: 0;
+    }
+    .block-content {
+      flex: 1;
+      min-width: 0;
+    }
+    /* Phase panels — only opacity transitions, no display flash on the avatar */
+    .block-phase {
+      transition: opacity 0.3s ease;
+    }
+
+    .thinking-row .thinking-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    /* Collapsed step — slides out of flow when the window moves past it */
+    .step.gone {
+      display: none;
+    }
+
+    /* Avatar: 32px, #d6e6ff */
+    .agent-avatar {
+      flex-shrink: 0;
+      width: 32px;
+      height: 32px;
+      border-radius: 9999px;
+      background: var(--brand-90);
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .agent-avatar svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* Shimmer on "Thinking..." */
+    .thinking-text {
+      font-style: normal;
+      font-size: 16px;
+      line-height: 24px;
+      letter-spacing: 0.0192px;
+      background-image: linear-gradient(
+        100deg,
+        rgba(255,255,255,0.55)  0%,
+        rgba(255,255,255,0.55) 38%,
+        rgba(255,255,255,1.0)  50%,
+        rgba(255,255,255,0.55) 62%,
+        rgba(255,255,255,0.55) 100%
+      );
+      background-size: 250% 100%;
+      background-position: 120% 50%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+      animation: shimmer 2.4s ease-in-out infinite;
+    }
+
+    @keyframes shimmer {
+      0%   { background-position: 120% 50%; }
+      100% { background-position: -120% 50%; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .thinking-text {
+        animation: none;
+        background: none;
+        -webkit-text-fill-color: var(--neutral-100);
+        color: var(--neutral-100);
+      }
+    }
+
+    /* ── Input bar — same column formula as thread ── */
+    .input-bar-wrap {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: var(--col-width);
+    }
+
+    .input-bar {
+      width: 100%;
+      height: 56px;
+      border-radius: 32px;
+      border: 1px solid var(--neutral-80);
+      background: var(--surface-1);
+      box-shadow: none;
+      display: flex;
+      align-items: center;
+      padding: 0 12px 0 24px;
+      gap: 12px;
+    }
+
+    /* Message field — takes remaining width */
+    .input-placeholder {
+      flex: 1;
+      font-size: 16px;
+      line-height: 24px;
+      letter-spacing: 0.0192px;
+      color: var(--neutral-50);
+      user-select: none;
+    }
+
+    /* Send button: 36px circle, #f3f3f3 */
+    .send-btn {
+      flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      border-radius: 99px;
+      background: var(--neutral-95);
+      border: none;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      transition: background 0.15s ease;
+    }
+
+    .send-btn:hover  { background: #e8e8e8; }
+    .send-btn:active { background: #ddd; }
+
+    /* ── Scroll-to-bottom arrow (matches Figma: Utility Button / node 2549-26461) ── */
+    .scroll-arrow {
+      position: fixed;
+      bottom: 92px;
+      left: 50%;
+      transform: translateX(-50%) translateY(8px);
+      width: 46px;
+      height: 46px;
+      border-radius: 100px;
+      border: none;
+      background: rgba(255, 255, 255, 0.98);
+      box-shadow:
+        0px 2px 8px -2px rgba(24, 24, 24, 0.08),
+        0px 8px 12px -2px rgba(24, 24, 24, 0.16);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      z-index: 99;
+    }
+
+    .scroll-arrow.visible {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .scroll-arrow:hover {
+      box-shadow:
+        0px 4px 10px -2px rgba(24, 24, 24, 0.12),
+        0px 10px 16px -2px rgba(24, 24, 24, 0.20);
+    }
+
+    .scroll-arrow svg {
+      display: block;
+    }
+
+    /* ── Pricing response ── */
+    .pricing-content {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .pricing-intro {
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 24px;
+      letter-spacing: 0.0192px;
+      color: var(--neutral-100);
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .price-card {
+      border-radius: 10px;
+      padding: 24px 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      color: #022AC0;
+    }
+
+    .price-card--featured {
+      background: #ffffff;
+      gap: 16px;
+    }
+
+    .price-card--muted {
+      background: rgba(255, 255, 255, 0.7);
+    }
+
+    .price-card__label {
+      font-family: var(--font-body);
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 24px;
+      letter-spacing: 0.02px;
+    }
+
+    .price-card__amount {
+      display: flex;
+      align-items: flex-start;
+      line-height: 1;
+      font-family: 'Avant Garde For Salesforce', var(--font-display), sans-serif;
+      font-weight: 600;
+      font-style: normal;
+    }
+
+    .price-card__currency {
+      font-size: 24px;
+      letter-spacing: -0.24px;
+      align-self: flex-start;
+      padding-top: 6px;
+    }
+
+    .price-card__currency--sm {
+      font-size: 20px;
+      letter-spacing: -0.06px;
+      padding-top: 4px;
+    }
+
+    .price-card__number {
+      font-size: 52px;
+      letter-spacing: -0.52px;
+    }
+
+    .price-card__number--sm {
+      font-size: 40px;
+      letter-spacing: -0.13px;
+      line-height: 48px;
+    }
+
+    .price-card__sub {
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 20px;
+    }
+
+    .price-card__headline {
+      font-family: var(--font-display), sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 24px;
+      letter-spacing: 0.08px;
+    }
+
+    .price-card__body {
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 20px;
+    }
+
+    .pricing-chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 580px) {
+      .pricing-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ── Dev toolbar ── */
+    .toolbar {
+      position: fixed;
+      top: 16px;
+      right: 24px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      z-index: 100;
+    }
+
+    .toolbar span {
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+    }
+
+    .toolbar button {
+      font-family: var(--font-body);
+      font-size: 12px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(0,0,0,0.35);
+      color: rgba(255,255,255,0.7);
+      cursor: pointer;
+      backdrop-filter: blur(6px);
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .toolbar button:hover { border-color: rgba(255,255,255,0.5); color: #fff; }
+
+    .sr-only {
+      position: absolute; width: 1px; height: 1px;
+      padding: 0; margin: -1px; overflow: hidden;
+      clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+    }
+
+    /* ── Convince flow: agent response row ── */
+    .agent-row {
+      display: none;
+      align-items: flex-start;
+      gap: var(--avatar-gap);
+      margin-top: 24px;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+    .agent-row.visible {
+      display: flex;
+      opacity: 1;
+    }
+    .agent-row .agent-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    /* ── Cursor-style thinking steps ── */
+    .steps-row {
+      display: none;
+      align-items: flex-start;
+      gap: var(--avatar-gap);
+      margin-top: 24px;
+      opacity: 0;
+      transition: opacity 0.35s ease;
+    }
+    .steps-row.visible {
+      display: flex;
+      opacity: 1;
+    }
+    .steps-list {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-style: normal;
+      font-size: 16px;
+      line-height: 20px;
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .step.visible { opacity: 1; transform: translateY(0); }
+
+    /* Step indicator dot */
+    .step-dot {
+      flex-shrink: 0;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.4);
+      transition: background 0.3s ease;
+    }
+    .step.active .step-dot {
+      background: rgba(255,255,255,0.9);
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+    .step.done .step-dot {
+      background: transparent;
+      position: relative;
+    }
+    /* Checkmark for done steps */
+    .step.done .step-dot::after {
+      content: '✓';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 10px;
+      font-style: normal;
+      color: rgba(255,255,255,0.5);
+      line-height: 1;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.5; transform: scale(0.75); }
+    }
+
+    /* Step text — shimmer when active, faded when done */
+    .step-label {
+      color: rgba(255,255,255,0.9);
+      transition: color 0.4s ease, opacity 0.4s ease;
+    }
+    .step.active .step-label {
+      background-image: linear-gradient(
+        100deg,
+        rgba(255,255,255,0.6)  0%,
+        rgba(255,255,255,0.6) 38%,
+        rgba(255,255,255,1.0)  50%,
+        rgba(255,255,255,0.6) 62%,
+        rgba(255,255,255,0.6) 100%
+      );
+      background-size: 250% 100%;
+      background-position: 120% 50%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+      animation: shimmer 1.6s ease-in-out infinite;
+    }
+    .step.done .step-label {
+      -webkit-text-fill-color: rgba(255,255,255,0.4);
+      color: rgba(255,255,255,0.4);
+      font-style: normal;
+    }
+
+    /* ── Email response body (Figma node 15478:1219) ── */
+    .email-body {
+      font-size: 16px;
+      line-height: 24px;
+      letter-spacing: 0.02px;
+      color: rgba(255,255,255,0.92);
+    }
+    .email-body p { margin-bottom: 14px; }
+    .email-body p:last-child { margin-bottom: 0; }
+    .email-body strong { font-weight: 700; color: #fff; }
+    .email-body ol,
+    .email-body ul {
+      padding-left: 20px;
+      margin-bottom: 14px;
+    }
+    .email-body li { margin-bottom: 4px; }
+    .email-body a, .email-body .underline {
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      color: rgba(255,255,255,0.9);
+      transition: color 0.2s ease, opacity 0.2s ease;
+      cursor: pointer;
+    }
+
+    .email-body a:hover, .email-body .underline:hover {
+      color: #ffffff;
+      opacity: 0.75;
+    }
+
+    /* Copy button */
+    .copy-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 24px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: var(--font-body);
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.02px;
+      padding: 0;
+      transition: opacity 0.15s;
+    }
+    .copy-btn:hover { opacity: 0.75; }
+    .copy-btn svg { flex-shrink: 0; }
+
+    /* ── Responsive below 1440px ── */
+    @media (max-width: 1439px) {
+      body { min-width: unset; }
+    }
+
+    /* ── Mobile — below 768px: input bar only ── */
+    @media (max-width: 767px) {
+      .input-bar {
+        min-height: 88px;
+        height: auto;
+        align-items: flex-start;
+        padding: 9px 14px;
+        flex-wrap: wrap;
+        border-radius: 8px;
+      }
+
+      .input-placeholder {
+        flex: 1 1 100%;
+        align-self: flex-start;
+        font-size: 14px;
+      }
+
+      .send-btn {
+        align-self: flex-end;
+        margin-left: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="scroll-area" id="scrollArea">
+  <div class="thread" role="region" aria-label="Agentforce conversation">
+
+    <!-- Speaker profile cards (Figma node 17035:2709) -->
+    <div class="cards-row">
+      <div class="cards-inner">
+
+        <!-- Bryson DeChambeau — Teal -->
+        <div class="profile-card profile-card--teal">
+          <div class="profile-card__img">
+            <img src="https://www.figma.com/api/mcp/asset/5714c3b7-d311-424b-99f9-f4c33d338492" alt="Bryson DeChambeau" />
+          </div>
+          <div class="profile-card__content">
+            <p class="profile-card__name">Bryson DeChambeau</p>
+            <p class="profile-card__role">Professional Golfer &amp; Chair of the President's Council on Sports, Fitness &amp; Nutrition</p>
+          </div>
+        </div>
+
+        <!-- Mel Robbins — Light Blue -->
+        <div class="profile-card profile-card--light-blue">
+          <div class="profile-card__img">
+            <img src="https://www.figma.com/api/mcp/asset/b29449bb-91ef-4d92-88b9-efee1b67026b" alt="Mel Robbins" />
+          </div>
+          <div class="profile-card__content">
+            <p class="profile-card__name">Mel Robbins</p>
+            <p class="profile-card__role">#1 New York Times Bestselling Author &amp; Award-winning Podcast Host</p>
+          </div>
+        </div>
+
+        <!-- Bozoma St. John — Violet -->
+        <div class="profile-card profile-card--violet">
+          <div class="profile-card__img">
+            <img src="https://www.figma.com/api/mcp/asset/04b10f90-371a-4efb-9dc5-9666f2668801" alt="Bozoma St. John" />
+          </div>
+          <div class="profile-card__content">
+            <p class="profile-card__name">Bozoma St. John</p>
+            <p class="profile-card__role">Forbes' #1 Most Influential CMO</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Suggested prompt chips -->
+    <div class="chips-row" id="chipsRow">
+      <button type="button" class="chip" id="chipConvince">Convince my boss</button>
+      <button type="button" class="chip" id="chipPricing">Get Pricing</button>
+    </div>
+
+    <!-- User response bubble — hidden until chip clicked -->
+    <div class="user-row" id="userRow" aria-hidden="true">
+      <div class="bubble">Get Pricing</div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════
+         PRICING BLOCK — shared avatar, thinking → response
+         ═══════════════════════════════════════════════════ -->
+    <div class="agent-block" id="pricingBlock" aria-hidden="true">
+      <div class="agent-avatar" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 520" fill="#0250D9" aria-hidden="true">
+          <path d="M314.9 276.2h.2a100 100 0 0 0-21.8 4.1s-9.2 2.9-23.3 4.9c-3.3.5-7.5.5-9.8.5h-1.7c-2.3 0-6.6-.2-9.8-.7a149.5 149.5 0 0 1-23.2-5.5 113 113 0 0 0-21.8-4.4c-44.9-4.6-64.3 12.5-65.4 15.7s3.8 44.8 7.4 51.4a28 28 0 0 0 13.8 12.4c5 2.1 46.1 6.2 59.8 4.3s15.8-6.5 19.5-13.5c2.6-5 9.3-27.6 13-40.9.9-2.6 1-7.8 7.3-8.2 6.3.5 6.4 5.8 7.2 8.4l12.4 41.1c3.5 7.1 5.6 11.7 19.3 13.9 13.6 2.1 54.8-1.2 59.8-3.2s10.4-5.7 14-12.2 9.2-48 8.2-51.2c-1-3.3-20.1-20.7-65.1-16.9"/>
+          <path d="M455.2 145.5h.1a226.5 226.5 0 0 0-43.7-42.1 36.2 36.2 0 0 0 29.9-35.6 36.3 36.3 0 1 0-70.6 11.4 258.5 258.5 0 0 0-83.5-23.3 260 260 0 0 0-138.2 23 36.3 36.3 0 1 0-70.7-11.1 36.2 36.2 0 0 0 29.6 35.6C61.5 137.8 29 187.9 21.6 246a201.5 201.5 0 0 0 43.2 151.5c39.4 49.8 100.6 82.5 167.8 89.6q14.1 1.5 27.9 1.5c119.9 0 223.7-81.4 237.9-191.6a201.5 201.5 0 0 0-43.2-151.5m-195 281.1h-.1c-90.2-.1-163.6-60.3-163.6-134.3 0-22.3 6.8-43.7 19.1-62.7a60.6 60.6 0 0 0 5.3 17.1 17 17 0 0 0 22.8 7.8c8.5-4.1 12-14.3 8.1-22.8-2.1-4.5-7.5-19.4 5.6-30.8 12.7 11.5 30.9 25 51.4 31.6 38.2 12.1 67.1 5 68.3 4.7a17.1 17.1 0 0 0 12.1-11.5 17 17 0 0 0-3.4-16.3 185.5 185.5 0 0 1-32.5-48.2c78.2 10.6 93.2 72.9 93.8 75.7a17 17 0 0 0 20.2 13.1c9.3-1.9 15.2-11 13.3-20.3a119 119 0 0 0-19.9-43c38.3 24.6 63.1 62.8 63.1 105.7 0 74-73.4 134.2-163.6 134.2"/>
+        </svg>
+      </div>
+      <div class="block-content">
+        <!-- Thinking phase -->
+        <div class="block-phase" id="pricingThinking" role="status" aria-live="polite">
+          <div class="steps-list">
+            <div class="step" id="pStep0"><span class="step-label">Checking today's best available pricing</span></div>
+            <div class="step" id="pStep1"><span class="step-label">Calculating your early bird savings</span></div>
+            <div class="step" id="pStep2"><span class="step-label">Scanning group discount eligibility</span></div>
+            <div class="step" id="pStep3"><span class="step-label">Curating your best deal</span></div>
+          </div>
+        </div>
+        <!-- Response phase -->
+        <div class="block-phase" id="pricingContent" style="display:none; opacity:0">
+          <div class="pricing-content">
+            <p class="pricing-intro">Nice, it pays to be an early bird.&nbsp; There's still time to get the best deal.&nbsp; Here are your options.</p>
+            <div class="pricing-grid">
+              <div class="price-card price-card--featured">
+                <p class="price-card__label">Launch Special</p>
+                <div class="price-card__amount">
+                  <span class="price-card__currency">$</span>
+                  <span class="price-card__number">2,299</span>
+                </div>
+                <p class="price-card__sub">Save $1,300 while supplies last</p>
+              </div>
+              <div class="price-card price-card--muted">
+                <div class="price-card__amount">
+                  <span class="price-card__currency price-card__currency--sm">$</span>
+                  <span class="price-card__number price-card__number--sm">2,299</span>
+                </div>
+                <p class="price-card__label">Full Price</p>
+              </div>
+              <div class="price-card price-card--muted">
+                <p class="price-card__headline">Save more with group registration.</p>
+                <p class="price-card__body">Register five or more team members and unlock $799 passes, saving over $7,500.</p>
+              </div>
+              <div class="price-card price-card--muted">
+                <p class="price-card__headline">Kickstart your learning with Trailblazer Bootcamp.</p>
+                <p class="price-card__body">Level up fast with expert-led, immersive sessions designed to help you build, deploy, and apply AI, so you leave with real skills, not just ideas.</p>
+              </div>
+            </div>
+            <div class="pricing-chips">
+              <button type="button" class="chip">Register now</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════
+         CONVINCE MY BOSS FLOW
+         ═══════════════════════════════════════════════════ -->
+
+    <!-- User bubble -->
+    <div class="user-row" id="convinceUserRow" aria-hidden="true">
+      <div class="bubble">Convince my boss</div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════
+         CONVINCE BLOCK — shared avatar, thinking → response
+         ═══════════════════════════════════════════════════ -->
+    <div class="agent-block" id="convinceBlock" aria-hidden="true">
+      <div class="agent-avatar" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 520" fill="#0250D9" aria-hidden="true">
+          <path d="M314.9 276.2h.2a100 100 0 0 0-21.8 4.1s-9.2 2.9-23.3 4.9c-3.3.5-7.5.5-9.8.5h-1.7c-2.3 0-6.6-.2-9.8-.7a149.5 149.5 0 0 1-23.2-5.5 113 113 0 0 0-21.8-4.4c-44.9-4.6-64.3 12.5-65.4 15.7s3.8 44.8 7.4 51.4a28 28 0 0 0 13.8 12.4c5 2.1 46.1 6.2 59.8 4.3s15.8-6.5 19.5-13.5c2.6-5 9.3-27.6 13-40.9.9-2.6 1-7.8 7.3-8.2 6.3.5 6.4 5.8 7.2 8.4l12.4 41.1c3.5 7.1 5.6 11.7 19.3 13.9 13.6 2.1 54.8-1.2 59.8-3.2s10.4-5.7 14-12.2 9.2-48 8.2-51.2c-1-3.3-20.1-20.7-65.1-16.9"/>
+          <path d="M455.2 145.5h.1a226.5 226.5 0 0 0-43.7-42.1 36.2 36.2 0 0 0 29.9-35.6 36.3 36.3 0 1 0-70.6 11.4 258.5 258.5 0 0 0-83.5-23.3 260 260 0 0 0-138.2 23 36.3 36.3 0 1 0-70.7-11.1 36.2 36.2 0 0 0 29.6 35.6C61.5 137.8 29 187.9 21.6 246a201.5 201.5 0 0 0 43.2 151.5c39.4 49.8 100.6 82.5 167.8 89.6q14.1 1.5 27.9 1.5c119.9 0 223.7-81.4 237.9-191.6a201.5 201.5 0 0 0-43.2-151.5m-195 281.1h-.1c-90.2-.1-163.6-60.3-163.6-134.3 0-22.3 6.8-43.7 19.1-62.7a60.6 60.6 0 0 0 5.3 17.1 17 17 0 0 0 22.8 7.8c8.5-4.1 12-14.3 8.1-22.8-2.1-4.5-7.5-19.4 5.6-30.8 12.7 11.5 30.9 25 51.4 31.6 38.2 12.1 67.1 5 68.3 4.7a17.1 17.1 0 0 0 12.1-11.5 17 17 0 0 0-3.4-16.3 185.5 185.5 0 0 1-32.5-48.2c78.2 10.6 93.2 72.9 93.8 75.7a17 17 0 0 0 20.2 13.1c9.3-1.9 15.2-11 13.3-20.3a119 119 0 0 0-19.9-43c38.3 24.6 63.1 62.8 63.1 105.7 0 74-73.4 134.2-163.6 134.2"/>
+        </svg>
+      </div>
+      <div class="block-content">
+        <!-- Thinking phase -->
+        <div class="block-phase" id="convinceThinking" role="status" aria-live="polite">
+          <div class="steps-list">
+            <div class="step" id="step0"><span class="step-label">Searching Dreamforce 2026 session data</span></div>
+            <div class="step" id="step1"><span class="step-label">Reviewing attendance benefits and ROI</span></div>
+            <div class="step" id="step2"><span class="step-label">Finding customer success stories</span></div>
+            <div class="step" id="step3"><span class="step-label">Composing email draft</span></div>
+          </div>
+        </div>
+        <!-- Response phase -->
+        <div class="block-phase" id="convinceContent" style="display:none; opacity:0">
+      <div class="agent-content">
+        <div class="email-body">
+          <p><strong>Subject</strong>: Request to Attend Dreamforce 2026 for Professional Development</p>
+          <p>Dear [Boss's Name],</p>
+          <p>I hope this message finds you well. I am writing to request approval to attend Dreamforce 2026, Salesforce's annual conference, taking place September 15–17 in San Francisco. This event is a unique opportunity to enhance my Salesforce skills, connect with other professionals, and bring back actionable insights to benefit our team.</p>
+          <p><strong>Why Attend Dreamforce 2026?</strong></p>
+          <ol>
+            <li><strong>Skill Development:</strong> Dreamforce offers hands-on workshops, breakout sessions, and roundtable discussions tailored to Salesforce professionals. I'll gain actionable insights and learn best practices to enhance my expertise.</li>
+            <li><strong>Networking:</strong> I'll connect with a global community of Salesforce admins and experts, sharing experiences and solutions to common challenges.</li>
+            <li><strong>Innovation and Inspiration:</strong> The event showcases groundbreaking innovations and inspiring keynotes that can transform our approach to Salesforce and business challenges.</li>
+          </ol>
+          <p><strong>Relevant Sessions</strong></p>
+          <ul>
+            <li>Hands-on training sessions to deepen my technical knowledge.</li>
+            <li>Roundtable discussions with Salesforce admins tackling similar challenges.</li>
+            <li>Keynotes on the latest Salesforce innovations and their practical applications.</li>
+          </ul>
+          <p><strong>Customer Success Stories</strong></p>
+          <p>Dreamforce also highlights real-world success stories, such as:</p>
+          <ul>
+            <li><a href="#" class="underline">Agentforce resolves over 75% of visitor issues on the Salesforce Help site.</a></li>
+            <li><a href="#" class="underline">Indeed speeds up hiring with Agentforce's digital workforce.</a></li>
+          </ul>
+          <p><strong>Cost and Value</strong></p>
+          <p>Early registration starts at $999, offering significant savings compared to the full price of $2,299. This includes access to all sessions, networking events, and even Dreamfest.</p>
+          <p><strong>Alignment with Our Goals</strong></p>
+          <p>[Insert how attending aligns with your team's or company's goals, such as improving efficiency, adopting new tools, or solving specific challenges.]</p>
+          <p>I am confident that attending Dreamforce 2026 will provide valuable insights and tools to help us achieve our objectives. I would be happy to discuss this further and provide a detailed plan for how I'll share the knowledge gained with our team.</p>
+          <p>Thank you for considering this opportunity.</p>
+          <p>Best regards,<br>[Your Name]</p>
+        </div>
+
+        <!-- Copy button -->
+        <button type="button" class="copy-btn" id="copyBtn" aria-label="Copy email to clipboard">
+          Copy
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <rect x="3" y="6" width="14" height="14" rx="1.5" stroke="white" stroke-width="1.5" fill="none"/>
+            <path d="M7 3h11a1.5 1.5 0 0 1 1.5 1.5V17" stroke="white" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+          </svg>
+        </button>
+      </div><!-- /.agent-content -->
+        </div><!-- /#convinceContent .block-phase -->
+      </div><!-- /.block-content -->
+    </div><!-- /#convinceBlock .agent-block -->
+
+  </div><!-- /.thread -->
+  </div><!-- /.scroll-area -->
+
+  <!-- Scroll-to-bottom indicator -->
+  <button
+    id="scrollArrow"
+    class="scroll-arrow"
+    aria-label="Scroll to see more content"
+    type="button"
+  >
+    <!-- SDS General Use / arrowdown — filled ↓ arrow, #032D60 -->
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path fill-rule="evenodd" clip-rule="evenodd"
+        d="M10 2a1 1 0 0 1 1 1v9.586l3.293-3.293a1 1 0 1 1 1.414 1.414l-5 5a1 1 0 0 1-1.414 0l-5-5a1 1 0 1 1 1.414-1.414L9 12.586V3a1 1 0 0 1 1-1z"
+        fill="#032D60"/>
+    </svg>
+  </button>
+
+  <!-- Fixed input bar -->
+  <div class="input-bar-wrap">
+    <div class="input-bar" aria-label="Message input">
+
+      <span class="input-placeholder">Message Agentforce</span>
+      <button type="button" class="send-btn" aria-label="Send message">
+        <!--
+          Send icon: SLDS utility/send — exact path from Figma MCP asset
+          viewBox 0 0 14.7692 12.4337, fill #c9c9c9 (--neutral-80)
+        -->
+        <svg
+          viewBox="0 0 14.7692 12.4337"
+          width="16"
+          height="14"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+        >
+          <path
+            fill-rule="evenodd"
+            clip-rule="evenodd"
+            d="M0.0307692 11.8183L1.38462 6.80295H7.10769C7.26154 6.80295 7.41538 6.6491 7.41538 6.49526V5.87987C7.41538 5.72603 7.26154 5.57218 7.10769 5.57218H1.38462L0.0615385 0.649102C0.0307692 0.587563 0 0.495255 0 0.402948C0 0.187563 0.215385 -0.0278215 0.461538 0.00294772C0.523077 0.00294772 0.553846 0.033717 0.615385 0.033717L14.4615 5.72603C14.6462 5.78756 14.7692 5.97218 14.7692 6.15679C14.7692 6.34141 14.6462 6.49526 14.4923 6.55679L0.615385 12.4029C0.553846 12.4337 0.492308 12.4337 0.430769 12.4337C0.184615 12.4029 0 12.2183 0 11.9722C0 11.9106 0 11.8799 0.0307692 11.8183Z"
+            fill="#c9c9c9"
+          />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Dev toolbar -->
+  <div class="toolbar">
+    <span>Dev:</span>
+    <button type="button" id="btnReset">Reset</button>
+  </div>
+
+  <script>
+    (function () {
+
+      /* ══════════════════════════════════════════════════════
+         SCROLL-TO-BOTTOM ARROW
+         ══════════════════════════════════════════════════════ */
+      var scrollArrow = document.getElementById('scrollArrow');
+      var scrollArea  = document.getElementById('scrollArea');
+
+      function updateArrow() {
+        var atBottom = scrollArea.scrollTop + scrollArea.clientHeight >= scrollArea.scrollHeight - 8;
+        if (atBottom) {
+          scrollArrow.classList.remove('visible');
+        } else {
+          scrollArrow.classList.add('visible');
+        }
+      }
+
+      scrollArrow.addEventListener('click', function () {
+        scrollArea.scrollTo({ top: scrollArea.scrollHeight, behavior: 'smooth' });
+      });
+
+      scrollArea.addEventListener('scroll', updateArrow, { passive: true });
+      /* Also re-check whenever new content appears (layout shifts) */
+      if (window.ResizeObserver) {
+        new ResizeObserver(updateArrow).observe(scrollArea);
+      }
+
+      /* Nudge: scroll just enough to reveal a new element, honouring the 112px thread padding */
+      function nudgeIntoView(el) {
+        var rect     = el.getBoundingClientRect();
+        var areaRect = scrollArea.getBoundingClientRect();
+        var buffer   = 112;
+        var over     = rect.bottom - (areaRect.bottom - buffer);
+        if (over > 0) scrollArea.scrollBy({ top: over + 8, behavior: 'smooth' });
+        setTimeout(updateArrow, 400);
+      }
+
+      /* keepInView: keep a live element visible with 64px bottom breathing room */
+      function keepInView(el) {
+        var rect     = el.getBoundingClientRect();
+        var areaRect = scrollArea.getBoundingClientRect();
+        var buffer   = 64;
+        var over     = rect.bottom - (areaRect.bottom - buffer);
+        if (over > 0) scrollArea.scrollBy({ top: over + 8, behavior: 'smooth' });
+        setTimeout(updateArrow, 400);
+      }
+
+      /* ══════════════════════════════════════════════════════
+         HELPERS
+         ══════════════════════════════════════════════════════ */
+      function show(el) {
+        el.removeAttribute('aria-hidden');
+        /* display:flex is set by .visible — paint one frame first so transition fires */
+        requestAnimationFrame(function () {
+          el.classList.add('visible');
+        });
+      }
+      function hide(el) {
+        el.setAttribute('aria-hidden', 'true');
+        el.classList.remove('visible'); /* display:none restored by CSS when .visible absent */
+      }
+
+      /* ── Phase swap: fade thinking out, fade response in (avatar stays put) ── */
+      function swapPhase(thinkingEl, responseEl, blockEl) {
+        thinkingEl.style.transition = 'opacity 0.25s ease';
+        thinkingEl.style.opacity    = '0';
+        setTimeout(function () {
+          thinkingEl.style.display = 'none';
+          responseEl.style.display = '';
+          requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+              responseEl.style.transition = 'opacity 0.4s ease';
+              responseEl.style.opacity    = '1';
+              setTimeout(function () { nudgeIntoView(blockEl); }, 50);
+            });
+          });
+        }, 280);
+      }
+
+      /* ══════════════════════════════════════════════════════
+         GET PRICING FLOW
+         ══════════════════════════════════════════════════════ */
+      var pricingUserRow  = document.getElementById('userRow');
+      var pricingBlock    = document.getElementById('pricingBlock');
+      var pricingThinking = document.getElementById('pricingThinking');
+      var pricingContent  = document.getElementById('pricingContent');
+      var pricingSteps    = [
+        document.getElementById('pStep0'),
+        document.getElementById('pStep1'),
+        document.getElementById('pStep2'),
+        document.getElementById('pStep3')
+      ];
+      var P_STEP_DURATION = 1100;
+
+      function runPricingStep(index, onAllDone) {
+        if (index >= pricingSteps.length) { onAllDone(); return; }
+        var el = pricingSteps[index];
+        el.classList.add('visible', 'active');
+        if (index >= 2) { pricingSteps[index - 2].classList.add('gone'); }
+        keepInView(pricingBlock); /* keep block visible with 64px bottom padding */
+        setTimeout(function () {
+          el.classList.remove('active');
+          el.classList.add('done');
+          runPricingStep(index + 1, onAllDone);
+        }, P_STEP_DURATION);
+      }
+
+      function triggerPricing() {
+        show(pricingUserRow);
+        nudgeIntoView(pricingUserRow);
+        setTimeout(function () {
+          show(pricingBlock);
+          nudgeIntoView(pricingBlock);
+          runPricingStep(0, function () {
+            setTimeout(function () {
+              swapPhase(pricingThinking, pricingContent, pricingBlock);
+            }, 400);
+          });
+        }, 350);
+      }
+
+      /* ══════════════════════════════════════════════════════
+         CONVINCE MY BOSS FLOW
+         ══════════════════════════════════════════════════════ */
+      var convinceUserRow  = document.getElementById('convinceUserRow');
+      var convinceBlock    = document.getElementById('convinceBlock');
+      var convinceThinking = document.getElementById('convinceThinking');
+      var convinceContent  = document.getElementById('convinceContent');
+      var steps = [
+        document.getElementById('step0'),
+        document.getElementById('step1'),
+        document.getElementById('step2'),
+        document.getElementById('step3')
+      ];
+      var STEP_DURATION = 1300;
+
+      function runStep(index, onAllDone) {
+        if (index >= steps.length) { onAllDone(); return; }
+        var el = steps[index];
+        el.classList.add('visible', 'active');
+        if (index >= 2) { steps[index - 2].classList.add('gone'); }
+        keepInView(convinceBlock); /* keep block visible with 64px bottom padding */
+        setTimeout(function () {
+          el.classList.remove('active');
+          el.classList.add('done');
+          runStep(index + 1, onAllDone);
+        }, STEP_DURATION);
+      }
+
+      function triggerConvince() {
+        show(convinceUserRow);
+        nudgeIntoView(convinceUserRow);
+        setTimeout(function () {
+          show(convinceBlock);
+          nudgeIntoView(convinceBlock);
+          runStep(0, function () {
+            setTimeout(function () {
+              swapPhase(convinceThinking, convinceContent, convinceBlock);
+            }, 400);
+          });
+        }, 350);
+      }
+
+      /* ══════════════════════════════════════════════════════
+         COPY BUTTON
+         ══════════════════════════════════════════════════════ */
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        var emailText = document.querySelector('.email-body').innerText;
+        navigator.clipboard.writeText(emailText).then(function () {
+          var btn = document.getElementById('copyBtn');
+          var original = btn.innerHTML;
+          btn.textContent = 'Copied';
+          setTimeout(function () { btn.innerHTML = original; }, 2000);
+        });
+      });
+
+      /* ══════════════════════════════════════════════════════
+         RESET
+         ══════════════════════════════════════════════════════ */
+      function reset() {
+        scrollArea.scrollTo({ top: 0, behavior: 'smooth' });
+
+        /* Pricing flow */
+        hide(pricingUserRow);
+        hide(pricingBlock);
+        pricingSteps.forEach(function (s) { s.classList.remove('visible', 'active', 'done', 'gone'); });
+        pricingThinking.style.cssText = '';   /* restore opacity/display */
+        pricingContent.style.cssText  = 'display:none; opacity:0';
+
+        /* Convince flow */
+        hide(convinceUserRow);
+        hide(convinceBlock);
+        steps.forEach(function (s) { s.classList.remove('visible', 'active', 'done', 'gone'); });
+        convinceThinking.style.cssText = '';
+        convinceContent.style.cssText  = 'display:none; opacity:0';
+      }
+
+      /* ══════════════════════════════════════════════════════
+         CHIP LISTENERS
+         ══════════════════════════════════════════════════════ */
+      document.getElementById('chipPricing').addEventListener('click', triggerPricing);
+      document.getElementById('chipConvince').addEventListener('click', triggerConvince);
+      document.getElementById('btnReset').addEventListener('click', reset);
+
+    })();
+  </script>
+</body>
+</html>
